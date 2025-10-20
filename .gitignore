@@ -2,6 +2,9 @@
 .env*
 .DS_Store
 
+# Streamlit
+.streamlit/secrets.toml
+
 # 虛擬環境
 venv_mediapipe/
 venv/

@@ -1,0 +1,21 @@
+[server]
+# 不自動開啟瀏覽器
+headless = true
+
+# 伺服器設定
+port = 8501
+address = "localhost"
+
+[browser]
+# 禁用自動開啟瀏覽器
+gatherUsageStats = false
+serverAddress = "localhost"
+serverPort = 8501
+
+[theme]
+# 深色主題（可選）
+primaryColor = "#FF4B4B"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#262730"
+textColor = "#FAFAFA"
+font = "sans serif"
