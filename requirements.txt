@@ -1,0 +1,13 @@
+# 運動動作分類系統相依套件
+
+# 核心套件
+torch>=2.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# 姿勢估計器（擇一安裝）
+# 方案 1: MediaPipe（推薦，需要 Python ≤ 3.11）
+# mediapipe==0.10.14
+
+# 方案 2: YOLOv8（支援 Python 3.14，但準確率較低）
+ultralytics>=8.0.0
