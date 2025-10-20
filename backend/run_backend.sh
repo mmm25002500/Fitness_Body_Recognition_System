@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting FastAPI Backend..."
+echo "Starting FastAPI Backend..."
 
 # Activate virtual environment if exists
 if [ -d "../venv_mediapipe" ]; then
@@ -8,7 +8,7 @@ if [ -d "../venv_mediapipe" ]; then
 fi
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -q -r requirements.txt
 
 # Run FastAPI server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000

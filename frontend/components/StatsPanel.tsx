@@ -63,13 +63,12 @@ export default function StatsPanel({ count, stage, angle, exerciseName, mode }: 
         </div>
       )}
 
-      {/* Tips */}
       <div className="bg-slate-700/30 rounded-xl p-4 text-sm text-gray-400">
-        <div className="font-semibold text-gray-300 mb-2">💡 Tips</div>
+        <div className="font-semibold text-gray-300 mb-2">Tips</div>
         <ul className="space-y-1">
-          <li>✓ Keep full body in frame</li>
-          <li>✓ Perform complete movements</li>
-          <li>✓ Maintain steady pace</li>
+          <li>• Keep full body in frame</li>
+          <li>• Perform complete movements</li>
+          <li>• Maintain steady pace</li>
         </ul>
       </div>
     </div>

@@ -47,7 +47,7 @@ export default function VideoPlayer({
     const ws = new WebSocket('ws://localhost:8000/ws/process');
 
     ws.onopen = () => {
-      console.log('✅ WebSocket connected');
+      console.log('WebSocket connected');
       setIsProcessing(true);
       setError(null);
     };

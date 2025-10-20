@@ -21,17 +21,15 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <header className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-2">
-            💪 Fitness AI Trainer
+            Fitness AI Trainer
           </h1>
           <p className="text-gray-300 text-lg">
             AI-powered exercise recognition and counting
           </p>
         </header>
 
-        {/* Mode Selection */}
         <div className="flex justify-center gap-4 mb-8">
           <button
             onClick={() => setMode('automatic')}
@@ -55,7 +53,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Manual Mode: Exercise Selector */}
         {mode === 'manual' && (
           <div className="mb-8">
             <ExerciseSelector
@@ -66,7 +63,6 @@ export default function Home() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Video Upload */}
           <div className="lg:col-span-2">
             {!videoFile ? (
               <VideoUploader onFileSelect={setVideoFile} />
@@ -84,7 +80,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Right: Stats Panel */}
           <div>
             <StatsPanel
               count={stats.count}
@@ -96,7 +91,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Footer */}
         <footer className="mt-12 text-center text-gray-400 text-sm">
           <p>Powered by BiLSTM + MediaPipe | Built with Next.js + FastAPI</p>
         </footer>

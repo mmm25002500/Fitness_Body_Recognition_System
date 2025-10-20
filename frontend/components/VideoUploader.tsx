@@ -43,10 +43,10 @@ export default function VideoUploader({ onFileSelect }: VideoUploaderProps) {
           />
         </label>
 
-        <div className="mt-6 text-sm text-gray-500 space-y-2">
-          <p>✅ Full body in frame</p>
-          <p>✅ Good lighting</p>
-          <p>✅ Clear movements</p>
+        <div className="mt-6 text-sm text-gray-500 space-y-1">
+          <p>• Full body in frame</p>
+          <p>• Good lighting</p>
+          <p>• Clear movements</p>
         </div>
       </div>
     </div>

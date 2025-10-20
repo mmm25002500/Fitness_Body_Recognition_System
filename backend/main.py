@@ -69,8 +69,8 @@ async def startup_event():
     model.to(device)
     model.eval()
 
-    print(f"✅ Model loaded on {device}")
-    print("✅ MediaPipe initialized")
+    print(f"Model loaded on {device}")
+    print("MediaPipe initialized")
 
 @app.get("/")
 async def root():
