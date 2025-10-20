@@ -1,3 +1,36 @@
 *.mp4
 .env*
-.DS_s*
+.DS_Store
+
+# 虛擬環境
+venv_mediapipe/
+venv/
+env/
+.venv/
+
+# Python 編譯檔案
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# PyTorch 模型檔案（保留 .pth 但排除大型檔案）
+*.ckpt
+*.safetensors
+
+# YOLOv8 快取
+yolov8*.pt
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
