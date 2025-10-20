@@ -53,21 +53,32 @@ bash start_all.sh
 
 ```
 ${Project_Folder}/
-├── backend/
-│   ├── main.py              # FastAPI 應用程式
-│   ├── requirements.txt     # Python 依賴套件
-│   └── run_backend.sh       # 後端啟動腳本
-├── frontend/
+├── backend/                        # 後端核心程式
+│   ├── main.py                    # FastAPI 應用程式
+│   ├── model.py                   # BiLSTM 模型定義
+│   ├── bilstm_mix_best_pt.pth    # 訓練好的模型權重
+│   ├── exercise_counter.py        # 計數邏輯
+│   ├── pose_extractor_mediapipe.py # 姿態估計
+│   ├── visualization.py           # 繪圖工具
+│   ├── feature_utils_v2.py       # 特徵提取
+│   ├── requirements.txt           # Python 依賴套件
+│   └── run_backend.sh            # 後端啟動腳本
+├── frontend/                       # 前端核心程式
 │   ├── app/
-│   │   └── page.tsx        # 主頁面
-│   ├── components/         # React 組件
+│   │   └── page.tsx              # 主頁面
+│   ├── components/               # React 組件
+│   │   ├── VideoUploader.tsx
+│   │   ├── VideoPlayer.tsx
+│   │   ├── ExerciseSelector.tsx
+│   │   └── StatsPanel.tsx
 │   └── package.json
-├── model.py                # BiLSTM 模型定義
-├── bilstm_mix_best_pt.pth # 訓練好的模型權重
-├── exercise_counter.py     # 計數邏輯
-├── pose_extractor_mediapipe.py # 姿態估計
-├── visualization.py        # 繪圖工具
-└── feature_utils_v2.py    # 特徵提取
+├── tools/                          # 輔助工具
+│   ├── app.py                    # Streamlit 版本（舊版）
+│   ├── inference_v2.py           # 命令列推論工具
+│   ├── pose_config.py            # 姿態估計器配置
+│   └── pose_extractor.py         # YOLOv8 姿態估計（備用）
+├── start_all.sh                   # 一鍵啟動腳本
+└── README.md                      # 專案文檔
 ```
 
 ## API

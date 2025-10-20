@@ -14,10 +14,6 @@ import json
 import base64
 import torch
 
-# Import existing modules
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
 from pose_extractor_mediapipe import PoseExtractorMediaPipe
 from exercise_counter import RepetitionCounter
 from model import BiLSTMAttention
@@ -63,7 +59,7 @@ async def startup_event():
         num_classes=5
     )
 
-    model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "bilstm_mix_best_pt.pth")
+    model_path = os.path.join(os.path.dirname(__file__), "bilstm_mix_best_pt.pth")
     checkpoint = torch.load(model_path, map_location=device, weights_only=True)
     model.load_state_dict(checkpoint)
     model.to(device)
