@@ -12,7 +12,7 @@
 ### 🧠 AI 模型
 | 檔案 | 用途 | 必要性 |
 |------|------|--------|
-| `test.py` | BiLSTM 模型定義 | ⭐⭐⭐ 必須 |
+| `model.py` | BiLSTM 模型定義 | ⭐⭐⭐ 必須 |
 | `bilstm_mix_best_pt.pth` | 訓練好的模型權重 | ⭐⭐⭐ 必須 |
 | `feature_utils_v2.py` | 特徵提取工具 | ⭐⭐⭐ 必須 |
 
@@ -85,7 +85,7 @@
 1. `app.py`
 2. `exercise_counter.py`
 3. `visualization.py`
-4. `test.py`
+4. `model.py`
 5. `bilstm_mix_best_pt.pth`
 6. `feature_utils_v2.py`
 7. `pose_extractor_mediapipe.py`

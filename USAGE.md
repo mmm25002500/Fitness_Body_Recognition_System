@@ -74,7 +74,7 @@ bash run_app.sh
 ├── exercise_counter.py             # 運動計數模組
 ├── visualization.py                # 視覺化繪圖
 ├── pose_extractor_mediapipe.py     # MediaPipe 姿態估計
-├── test.py                         # BiLSTM 模型定義
+├── model.py                        # BiLSTM 模型定義
 ├── bilstm_mix_best_pt.pth         # 訓練好的模型
 ├── install_mediapipe.sh            # 安裝腳本
 ├── run_app.sh                      # 啟動腳本
