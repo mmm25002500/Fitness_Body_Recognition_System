@@ -1,0 +1,29 @@
+{
+  "default": {
+    "title": "健身肢體辨識系統",
+    "description": "基於 BiLSTM 和 MediaPipe 的健身肢體辨識系統，支援自動識別五種運動動作，提供即時姿勢分析和計數功能。",
+    "image": "/bityo_bg_circle.png",
+    "type": "website",
+    "keyword": "健身,肢體辨識,AI,機器學習,BiLSTM,MediaPipe,運動識別,姿勢估計,Fitness,Pose Estimation,Exercise Recognition",
+    "author": "TershiXia",
+    "copyright": "TershiXia"
+  },
+  "Index": {
+    "title": "首頁｜健身肢體辨識系統",
+    "description": "一個基於 BiLSTM 和 MediaPipe 的健身肢體辨識系統，可支援全自動或全手動識別五種不同的運動模式，包含槓鈴二頭彎舉、錘式彎舉、伏地挺身、肩上推舉、深蹲。",
+    "image": "/bityo_bg_circle.png",
+    "type": "website",
+    "keyword": "健身,肢體辨識,AI健身,運動識別,深度學習,BiLSTM,MediaPipe,槓鈴彎舉,伏地挺身,深蹲,Fitness AI,Pose Detection",
+    "author": "TershiXia",
+    "copyright": "TershiXia"
+  },
+  "NotFound": {
+    "title": "404 - 找不到頁面 | 健身肢體辨識系統",
+    "description": "抱歉，您訪問的頁面不存在。返回首頁繼續使用健身肢體辨識系統。",
+    "image": "/bityo_bg_circle.png",
+    "type": "website",
+    "keyword": "404,頁面不存在",
+    "author": "TershiXia",
+    "copyright": "TershiXia"
+  }
+}

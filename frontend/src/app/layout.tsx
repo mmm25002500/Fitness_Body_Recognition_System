@@ -6,9 +6,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-primary-black-200"
-      >
+    <html lang="zh-TW">
+      <body className="bg-primary-black-200">
         {children}
       </body>
     </html>
