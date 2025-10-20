@@ -5,12 +5,12 @@ import VideoUploader from '@/components/VideoUploader';
 import VideoPlayer from '@/components/VideoPlayer';
 import ExerciseSelector from '@/components/ExerciseSelector';
 import StatsPanel from '@/components/StatsPanel';
+import Footer from '@/components/Footer/Footer';
 
 export default function Home() {
   const [mode, setMode] = useState<'manual' | 'automatic'>('automatic');
   const [selectedExercise, setSelectedExercise] = useState<number>(3);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [stats, setStats] = useState({
     count: 0,
     stage: 'down',
@@ -19,37 +19,37 @@ export default function Home() {
   });
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <main className="min-h-screen dark:bg-neutral-900">
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-2">
-            Fitness AI Trainer
+            健身肢體辨識系統
           </h1>
           <p className="text-gray-300 text-lg">
-            AI-powered exercise recognition and counting
+            一個基於 BiLSTM 和 MediaPipe 的健身肢體辨識系統，可支援全自動或全手動識別五種不同的運動模式。
           </p>
         </header>
 
         <div className="flex justify-center gap-4 mb-8">
           <button
+            type='button'
             onClick={() => setMode('automatic')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              mode === 'automatic'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-            }`}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${mode === 'automatic'
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
+              : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+              }`}
           >
-            🤖 Automatic Mode
+            自動模式
           </button>
           <button
+            type='button'
             onClick={() => setMode('manual')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              mode === 'manual'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-            }`}
+            className={`px-6 py-3 rounded-lg font-semibold transition-all ${mode === 'manual'
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
+              : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+              }`}
           >
-            ✋ Manual Mode
+            手動模式
           </button>
         </div>
 
@@ -91,9 +91,7 @@ export default function Home() {
           </div>
         </div>
 
-        <footer className="mt-12 text-center text-gray-400 text-sm">
-          <p>Powered by BiLSTM + MediaPipe | Built with Next.js + FastAPI</p>
-        </footer>
+        <Footer />
       </div>
     </main>
   );

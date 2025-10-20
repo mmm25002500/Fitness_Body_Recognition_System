@@ -10,7 +10,7 @@ export default function VideoUploader({ onFileSelect }: VideoUploaderProps) {
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('video/')) {
+    if (file?.type?.startsWith('video/')) {
       onFileSelect(file);
     }
   }, [onFileSelect]);
@@ -26,15 +26,14 @@ export default function VideoUploader({ onFileSelect }: VideoUploaderProps) {
     <div
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
-      className="border-4 border-dashed border-purple-500 rounded-2xl p-12 text-center bg-slate-800/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all cursor-pointer"
+      className="border-2 border-dashed border-bityo rounded-3xl p-12 text-center bg-slate-800/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all cursor-pointer"
     >
       <div className="flex flex-col items-center gap-4">
-        <div className="text-6xl">🎥</div>
-        <h3 className="text-2xl font-semibold text-white">Upload Your Workout Video</h3>
-        <p className="text-gray-400">Drag & drop or click to browse</p>
+        <h3 className="text-2xl font-semibold text-white">上傳您的運動影片</h3>
+        <p className="text-gray-400">拖放或點擊以瀏覽</p>
 
-        <label className="mt-4 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg cursor-pointer transition-colors">
-          Choose Video
+        <label className="mt-4 px-6 py-3 bg-bityo hover:bg-bityo/50 text-white font-semibold rounded-lg cursor-pointer transition-colors">
+          選擇影片
           <input
             type="file"
             accept="video/*"
@@ -44,9 +43,9 @@ export default function VideoUploader({ onFileSelect }: VideoUploaderProps) {
         </label>
 
         <div className="mt-6 text-sm text-gray-500 space-y-1">
-          <p>• Full body in frame</p>
-          <p>• Good lighting</p>
-          <p>• Clear movements</p>
+          <p>• 保持全身在畫面內</p>
+          <p>• 確保良好的光線</p>
+          <p>• 動作要清晰</p>
         </div>
       </div>
     </div>
