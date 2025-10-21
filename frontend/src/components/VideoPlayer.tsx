@@ -34,6 +34,7 @@ export default function VideoPlayer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(30);
   const frameIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -143,16 +144,16 @@ export default function VideoPlayer({
     // Start video playback
     videoElement.play();
 
-    // Send frames at regular intervals (只在沒有等待回應時發送)
+    // Send frames at regular intervals (只在沒有等待回應且未暫停時發送)
     const frameInterval = 1000 / fps;
     frameIntervalRef.current = setInterval(() => {
-      if (videoElement.paused || videoElement.ended) {
+      if (videoElement.ended) {
         stopProcessing();
         return;
       }
 
-      // 只有在沒有等待回應時才發送新幀
-      if (!isWaitingForResponse.current) {
+      // 只有在沒有等待回應且未暫停時才發送新幀
+      if (!isWaitingForResponse.current && !isPaused) {
         sendFrame();
       }
     }, frameInterval);
@@ -188,6 +189,21 @@ export default function VideoPlayer({
     );
   };
 
+  const pauseProcessing = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    setIsPaused(true);
+  };
+
+  const resumeProcessing = () => {
+    const videoElement = videoRef.current;
+    if (videoElement) {
+      videoElement.play();
+    }
+    setIsPaused(false);
+  };
+
   const stopProcessing = () => {
     if (frameIntervalRef.current) {
       clearInterval(frameIntervalRef.current);
@@ -204,6 +220,7 @@ export default function VideoPlayer({
     }
 
     setIsProcessing(false);
+    setIsPaused(false);
   };
 
   const handleVideoLoaded = () => {
@@ -251,13 +268,21 @@ export default function VideoPlayer({
           >
             ▶️ Start Processing
           </button>
+        ) : isPaused ? (
+          <button
+            type='button'
+            onClick={resumeProcessing}
+            className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
+          >
+            ▶️ Resume
+          </button>
         ) : (
           <button
             type='button'
-            onClick={stopProcessing}
-            className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
+            onClick={pauseProcessing}
+            className="flex-1 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition-colors"
           >
-            ⏸️ Stop
+            ⏸️ Pause
           </button>
         )}
 
@@ -311,10 +336,12 @@ export default function VideoPlayer({
 
       {/* Info */}
       <div className="text-sm text-gray-400 text-center">
-        {isProcessing ? (
-          <span className="text-green-400">● Processing video in real-time...</span>
-        ) : (
+        {!isProcessing ? (
           <span>Click Start Processing to begin analysis</span>
+        ) : isPaused ? (
+          <span className="text-yellow-400">⏸️ Paused - Click Resume to continue</span>
+        ) : (
+          <span className="text-green-400">● Processing video in real-time...</span>
         )}
       </div>
     </div>
