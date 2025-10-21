@@ -71,9 +71,12 @@ export default function VideoPlayer({
         const canvas = canvasRef.current;
         if (canvas) {
           const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
           const img = new Image();
           img.onload = () => {
-            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             // 如果有警告，在畫面上顯示
             if (data.warning) {
