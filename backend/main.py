@@ -16,8 +16,8 @@ import torch
 
 from pose_extractor_mediapipe import PoseExtractorMediaPipe
 from exercise_counter import RepetitionCounter
-from model import BiLSTMAttention
-from feature_utils_v2 import landmarks_to_features_v2
+from model import BiLSTMAttention, BiLSTMSimple, BiLSTMSingleLayer
+from feature_utils_v2 import landmarks_to_features_v2, landmarks_to_features_simple
 
 app = FastAPI(title="Fitness AI Trainer API")
 
@@ -34,6 +34,7 @@ app.add_middleware(
 pose_extractor = None
 model = None
 device = None
+# 使用原本的模型 (5 classes - 包含深蹲)
 exercise_names = [
     "Barbell Biceps Curl",
     "Hammer Curl",
@@ -50,8 +51,12 @@ async def startup_event():
     # Initialize MediaPipe
     pose_extractor = PoseExtractorMediaPipe()
 
-    # Load BiLSTM model
+    # Load BiLSTM model (使用 bilstm_mix_best_pt.pth)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model_path = os.path.join(os.path.dirname(__file__), "bilstm_mix_best_pt.pth")
+
+    print("載入模型 bilstm_mix_best_pt.pth (支援 5 種運動)...")
     model = BiLSTMAttention(
         input_dim=102,
         hidden_dim=96,
@@ -59,12 +64,13 @@ async def startup_event():
         num_classes=5
     )
 
-    model_path = os.path.join(os.path.dirname(__file__), "bilstm_mix_best_pt.pth")
     checkpoint = torch.load(model_path, map_location=device, weights_only=True)
     model.load_state_dict(checkpoint)
     model.to(device)
     model.eval()
 
+    print(f"✓ 模型載入成功 (input_dim=102, num_classes=5)")
+    print(f"✓ 支援運動: {', '.join(exercise_names)}")
     print(f"Model loaded on {device}")
     print("MediaPipe initialized")
 
@@ -149,6 +155,7 @@ async def predict_exercise(
 
             landmarks, _ = pose_extractor.extract_landmarks(frame)
             if landmarks is not None:
+                # 使用 102 維特徵提取（對應 bilstm_mix_best_pt.pth）
                 features = landmarks_to_features_v2([landmarks])[0]
                 frame_features.append(features)
 
@@ -206,15 +213,23 @@ async def predict_exercise(
 @app.websocket("/ws/process")
 async def websocket_process(websocket: WebSocket):
     """
-    WebSocket endpoint for real-time video processing
+    WebSocket endpoint for real-time video processing with automatic exercise prediction
 
-    Receives: JSON with {mode, exercise_id, frame_base64, debug}
-    Sends: JSON with {frame_base64, count, stage, angle, exercise_name}
+    Receives: JSON with {mode, exercise_id, frame_base64, debug, is_video_end}
+    Sends: JSON with {frame_base64, count, stage, angle, exercise_name, predicted_exercise_id, prediction_confidence}
     """
     await websocket.accept()
 
     # Create counter instance
     counter = None
+
+    # Prediction state (累積預測)
+    frame_features = []  # 累積特徵向量
+    predictions_history = []  # 所有預測記錄
+    window_size = 45
+    stride = 3
+    predicted_exercise_id = None
+    prediction_confidence = 0.0
 
     try:
         while True:
@@ -226,6 +241,7 @@ async def websocket_process(websocket: WebSocket):
             exercise_id = message.get("exercise_id", 3)
             frame_base64 = message.get("frame")
             debug = message.get("debug", False)
+            is_video_end = message.get("is_video_end", False)
 
             # Decode frame
             frame_bytes = base64.b64decode(frame_base64.split(',')[1] if ',' in frame_base64 else frame_base64)
@@ -242,6 +258,45 @@ async def websocket_process(websocket: WebSocket):
                     "error": "No pose detected"
                 })
                 continue
+
+            # 累積特徵並進行預測
+            if mode == "automatic":
+                # 提取 102 維特徵
+                features = landmarks_to_features_v2([landmarks])[0]
+                frame_features.append(features)
+
+                # 當累積足夠幀數，開始滑動窗口預測
+                if len(frame_features) >= window_size:
+                    # 取最新的窗口
+                    window = frame_features[-window_size:]
+                    window_tensor = torch.FloatTensor([window]).to(device)
+
+                    with torch.no_grad():
+                        output = model(window_tensor)
+                        probabilities = torch.softmax(output, dim=1)
+                        pred_class = torch.argmax(probabilities, dim=1).item()
+                        confidence = probabilities[0][pred_class].item()
+
+                    predictions_history.append({
+                        "class": pred_class,
+                        "confidence": confidence
+                    })
+
+                    # 計算多數投票的預測結果
+                    class_counts = {}
+                    for pred in predictions_history:
+                        cls = pred["class"]
+                        class_counts[cls] = class_counts.get(cls, 0) + 1
+
+                    # 最多的類別
+                    predicted_exercise_id = max(class_counts, key=class_counts.get)
+
+                    # 計算該類別的平均信心度
+                    same_class_preds = [p["confidence"] for p in predictions_history if p["class"] == predicted_exercise_id]
+                    prediction_confidence = np.mean(same_class_preds) if same_class_preds else 0.0
+
+                    # 自動模式下，使用預測的運動類型
+                    exercise_id = predicted_exercise_id
 
             # Initialize or update counter
             if counter is None or (mode == "manual" and counter.exercise_type != exercise_id):
@@ -276,7 +331,7 @@ async def websocket_process(websocket: WebSocket):
             frame_base64_out = base64.b64encode(buffer).decode('utf-8')
 
             # Send response
-            await websocket.send_json({
+            response = {
                 "success": True,
                 "frame": f"data:image/jpeg;base64,{frame_base64_out}",
                 "count": count,
@@ -284,12 +339,24 @@ async def websocket_process(websocket: WebSocket):
                 "angle": angle,
                 "exercise_name": exercise_name,
                 "exercise_id": exercise_id
-            })
+            }
+
+            # 加入預測資訊（如果有預測）
+            if predicted_exercise_id is not None:
+                response["predicted_exercise_id"] = predicted_exercise_id
+                response["predicted_exercise_name"] = exercise_names[predicted_exercise_id]
+                response["prediction_confidence"] = float(prediction_confidence)
+                response["total_predictions"] = len(predictions_history)
+                response["is_prediction_final"] = is_video_end
+
+            await websocket.send_json(response)
 
     except WebSocketDisconnect:
         print("Client disconnected")
     except Exception as e:
         print(f"WebSocket error: {e}")
+        import traceback
+        traceback.print_exc()
         await websocket.send_json({
             "success": False,
             "error": str(e)

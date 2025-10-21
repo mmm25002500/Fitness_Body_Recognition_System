@@ -15,6 +15,14 @@ interface VideoPlayerProps {
   onReset: () => void;
 }
 
+interface PredictionResult {
+  exerciseId: number;
+  exerciseName: string;
+  confidence: number;
+  totalPredictions: number;
+  isFinal: boolean;
+}
+
 export default function VideoPlayer({
   videoFile,
   mode,
@@ -29,6 +37,7 @@ export default function VideoPlayer({
   const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(30);
   const frameIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -67,12 +76,23 @@ export default function VideoPlayer({
           img.src = data.frame;
         }
 
-        // Update stats
+        // Update prediction result (如果有預測資料)
+        if (data.predicted_exercise_id !== undefined) {
+          setPrediction({
+            exerciseId: data.predicted_exercise_id,
+            exerciseName: data.predicted_exercise_name,
+            confidence: data.prediction_confidence,
+            totalPredictions: data.total_predictions,
+            isFinal: data.is_prediction_final || false,
+          });
+        }
+
+        // Update stats (使用預測的運動名稱，如果有的話)
         onStatsUpdate({
           count: data.count,
           stage: data.stage,
           angle: data.angle,
-          exerciseName: data.exercise_name,
+          exerciseName: data.predicted_exercise_name || data.exercise_name,
         });
       } else {
         console.error('Frame processing error:', data.error);
@@ -229,6 +249,45 @@ export default function VideoPlayer({
           🔄 Reset
         </button>
       </div>
+
+      {/* Prediction Result Display */}
+      {prediction && (
+        <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/50 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-blue-200">
+              {prediction.isFinal ? '🎯 Final Prediction' : '🔄 Real-time Prediction'}
+            </h3>
+            <span className="text-xs text-gray-400">
+              {prediction.totalPredictions} predictions
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl font-bold text-white">
+                {prediction.exerciseName}
+              </span>
+              <span className="text-xl font-semibold text-green-400">
+                {(prediction.confidence * 100).toFixed(1)}%
+              </span>
+            </div>
+
+            {/* Confidence Bar */}
+            <div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-green-500 to-blue-500 h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${prediction.confidence * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {prediction.isFinal && (
+            <div className="text-sm text-green-300 text-center pt-2 border-t border-blue-500/30">
+              ✓ Analysis Complete
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Info */}
       <div className="text-sm text-gray-400 text-center">

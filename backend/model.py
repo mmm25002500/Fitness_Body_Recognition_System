@@ -1,6 +1,38 @@
 import torch
 import torch.nn as nn
 
+# 簡化版 BiLSTM 模型 (從 Keras 轉換)
+class BiLSTMSimple(nn.Module):
+    """簡化版 BiLSTM 模型 - 從 Keras .h5 模型轉換"""
+    def __init__(self, input_dim=22, hidden_dim=91, num_classes=4):
+        super().__init__()
+        # 第一層 BiLSTM
+        self.lstm1 = nn.LSTM(input_dim, hidden_dim, batch_first=True, bidirectional=True)
+        self.dropout1 = nn.Dropout(0.5)
+
+        # 第二層 BiLSTM
+        self.lstm2 = nn.LSTM(hidden_dim * 2, hidden_dim, batch_first=True, bidirectional=True)
+        self.dropout2 = nn.Dropout(0.5)
+
+        # 輸出層 - 直接從 BiLSTM 的最後一個時間步輸出
+        self.fc = nn.Linear(hidden_dim * 2, num_classes)
+
+    def forward(self, x):
+        # LSTM 1
+        out, _ = self.lstm1(x)
+        out = self.dropout1(out)
+
+        # LSTM 2
+        out, _ = self.lstm2(out)
+        out = self.dropout2(out)
+
+        # 取最後一個時間步
+        out = out[:, -1, :]  # (batch, hidden*2)
+
+        # 分類
+        out = self.fc(out)
+        return out
+
 # Attention 模組
 class Attention(nn.Module):
     def __init__(self, hidden_dim, attn_dim=128):
@@ -40,6 +72,25 @@ class BiLSTMAttention(nn.Module):
 
         out = torch.relu(self.fc1(context))
         out = self.fc2(out)
+        return out
+
+# 單層 BiLSTM 模型（對應 model_bilstm.pth）
+class BiLSTMSingleLayer(nn.Module):
+    """單層 BiLSTM 模型 - 用於 model_bilstm.pth"""
+    def __init__(self, input_dim=22, hidden_dim=64, num_classes=5):
+        super().__init__()
+        # 單層 BiLSTM
+        self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True, bidirectional=True)
+        # 輸出層
+        self.fc = nn.Linear(hidden_dim * 2, num_classes)
+
+    def forward(self, x):
+        # LSTM
+        out, _ = self.lstm(x)
+        # 取最後一個時間步
+        out = out[:, -1, :]  # (batch, hidden*2)
+        # 分類
+        out = self.fc(out)
         return out
 
 if __name__ == "__main__":

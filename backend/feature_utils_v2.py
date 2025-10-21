@@ -1,5 +1,110 @@
 import numpy as np
 
+def landmarks_to_features_simple(landmarks_sequence):
+    """
+    將姿勢關節點轉換為 22 維特徵向量 (用於新模型)
+
+    這是簡化版特徵提取，只使用關鍵關節點的相對位置
+    特徵組成：
+    - 8 個關節角度 (肘x2, 膝x2, 肩x2, 髖x2)
+    - 14 維額外特徵 (身體比例、關節距離等)
+
+    總計: 22 維
+    """
+    features = []
+
+    for frame_landmarks in landmarks_sequence:
+        frame_features = []
+
+        # 1. 關節角度特徵（8 維）
+        angles = calculate_joint_angles(frame_landmarks)
+        frame_features.extend(angles)
+
+        # 2. 身體比例特徵（14 維）
+        # 計算關鍵關節點之間的距離
+        try:
+            # 肩膀寬度
+            shoulder_width = np.linalg.norm(
+                frame_landmarks[11][:3] - frame_landmarks[12][:3]
+            )
+
+            # 髖部寬度
+            hip_width = np.linalg.norm(
+                frame_landmarks[23][:3] - frame_landmarks[24][:3]
+            )
+
+            # 軀幹長度 (左肩到左髖)
+            torso_length = np.linalg.norm(
+                frame_landmarks[11][:3] - frame_landmarks[23][:3]
+            )
+
+            # 左臂長度
+            left_arm = np.linalg.norm(
+                frame_landmarks[11][:3] - frame_landmarks[13][:3]
+            ) + np.linalg.norm(
+                frame_landmarks[13][:3] - frame_landmarks[15][:3]
+            )
+
+            # 右臂長度
+            right_arm = np.linalg.norm(
+                frame_landmarks[12][:3] - frame_landmarks[14][:3]
+            ) + np.linalg.norm(
+                frame_landmarks[14][:3] - frame_landmarks[16][:3]
+            )
+
+            # 左腿長度
+            left_leg = np.linalg.norm(
+                frame_landmarks[23][:3] - frame_landmarks[25][:3]
+            ) + np.linalg.norm(
+                frame_landmarks[25][:3] - frame_landmarks[27][:3]
+            )
+
+            # 右腿長度
+            right_leg = np.linalg.norm(
+                frame_landmarks[24][:3] - frame_landmarks[26][:3]
+            ) + np.linalg.norm(
+                frame_landmarks[26][:3] - frame_landmarks[28][:3]
+            )
+
+            # 身體中心的 y 座標 (髖部平均高度)
+            hip_y = (frame_landmarks[23][1] + frame_landmarks[24][1]) / 2
+
+            # 手腕相對髖部的高度
+            left_wrist_y = frame_landmarks[15][1] - hip_y
+            right_wrist_y = frame_landmarks[16][1] - hip_y
+
+            # 腳踝相對髖部的高度
+            left_ankle_y = frame_landmarks[27][1] - hip_y
+            right_ankle_y = frame_landmarks[28][1] - hip_y
+
+            # 手腕的 x 座標差異
+            wrists_x_diff = frame_landmarks[15][0] - frame_landmarks[16][0]
+
+            # 腳踝的 x 座標差異
+            ankles_x_diff = frame_landmarks[27][0] - frame_landmarks[28][0]
+
+            additional = [
+                shoulder_width, hip_width, torso_length,
+                left_arm, right_arm, left_leg, right_leg,
+                hip_y, left_wrist_y, right_wrist_y,
+                left_ankle_y, right_ankle_y,
+                wrists_x_diff, ankles_x_diff
+            ]
+
+        except Exception as e:
+            # 如果計算失敗，使用零填充
+            additional = [0.0] * 14
+
+        frame_features.extend(additional)
+
+        # 確保正好 22 維
+        if len(frame_features) < 22:
+            frame_features.extend([0.0] * (22 - len(frame_features)))
+
+        features.append(frame_features[:22])
+
+    return np.array(features, dtype=np.float32)
+
 def calculate_joint_angles(landmarks):
     """
     計算關節角度特徵
