@@ -252,10 +252,19 @@ async def websocket_process(websocket: WebSocket):
             landmarks, pose_landmarks = pose_extractor.extract_landmarks(frame)
 
             if landmarks is None:
-                # No pose detected
+                # No pose detected - 仍然回傳畫面，但標註警告
+                _, buffer = cv2.imencode('.jpg', frame)
+                frame_base64_out = base64.b64encode(buffer).decode('utf-8')
+
                 await websocket.send_json({
-                    "success": False,
-                    "error": "No pose detected"
+                    "success": True,
+                    "frame": f"data:image/jpeg;base64,{frame_base64_out}",
+                    "count": counter.count if counter else 0,
+                    "stage": counter.stage if counter else "unknown",
+                    "angle": None,
+                    "exercise_name": exercise_names[exercise_id] if exercise_id < len(exercise_names) else "Unknown",
+                    "exercise_id": exercise_id,
+                    "warning": "No pose detected in this frame"
                 })
                 continue
 

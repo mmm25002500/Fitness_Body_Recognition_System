@@ -38,6 +38,7 @@ export default function VideoPlayer({
   const [fps, setFps] = useState(30);
   const frameIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
+  const isWaitingForResponse = useRef(false);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -72,6 +73,15 @@ export default function VideoPlayer({
           const img = new Image();
           img.onload = () => {
             ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // 如果有警告，在畫面上顯示
+            if (data.warning) {
+              ctx.fillStyle = 'rgba(255, 165, 0, 0.8)';
+              ctx.fillRect(10, 10, 300, 40);
+              ctx.fillStyle = 'white';
+              ctx.font = '16px Arial';
+              ctx.fillText(data.warning, 20, 35);
+            }
           };
           img.src = data.frame;
         }
@@ -96,7 +106,11 @@ export default function VideoPlayer({
         });
       } else {
         console.error('Frame processing error:', data.error);
+        setError(data.error);
       }
+
+      // 收到回應後，標記為可以發送下一幀
+      isWaitingForResponse.current = false;
     };
 
     ws.onerror = (error) => {
@@ -129,7 +143,7 @@ export default function VideoPlayer({
     // Start video playback
     videoElement.play();
 
-    // Send frames at regular intervals
+    // Send frames at regular intervals (只在沒有等待回應時發送)
     const frameInterval = 1000 / fps;
     frameIntervalRef.current = setInterval(() => {
       if (videoElement.paused || videoElement.ended) {
@@ -137,7 +151,10 @@ export default function VideoPlayer({
         return;
       }
 
-      sendFrame();
+      // 只有在沒有等待回應時才發送新幀
+      if (!isWaitingForResponse.current) {
+        sendFrame();
+      }
     }, frameInterval);
   };
 
@@ -149,6 +166,9 @@ export default function VideoPlayer({
     if (!videoElement || !canvas || !ws || ws.readyState !== WebSocket.OPEN) {
       return;
     }
+
+    // 標記正在等待回應
+    isWaitingForResponse.current = true;
 
     // Draw current video frame to canvas
     const ctx = canvas.getContext('2d');
@@ -201,8 +221,8 @@ export default function VideoPlayer({
         <video
           ref={videoRef}
           onLoadedMetadata={handleVideoLoaded}
-          className={`absolute inset-0 w-full h-full ${isProcessing ? 'opacity-0' : 'opacity-100'}`}
-          controls={!isProcessing}
+          className="hidden"
+          muted
         >
           {/* Provide a captions track to satisfy accessibility/lint rules.
               If you have an actual VTT file, set src="/path/to/captions.vtt" and adjust srcLang/label accordingly. */}
@@ -210,7 +230,7 @@ export default function VideoPlayer({
         </video>
         <canvas
           ref={canvasRef}
-          className={`absolute inset-0 w-full h-full ${isProcessing ? 'opacity-100' : 'opacity-0'}`}
+          className="w-full h-full"
         />
       </div>
 
