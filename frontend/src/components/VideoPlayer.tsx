@@ -40,6 +40,7 @@ export default function VideoPlayer({
   const frameIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const isWaitingForResponse = useRef(false);
+  const isPausedRef = useRef(false);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -90,24 +91,27 @@ export default function VideoPlayer({
           img.src = data.frame;
         }
 
-        // Update prediction result (如果有預測資料)
-        if (data.predicted_exercise_id !== undefined) {
-          setPrediction({
-            exerciseId: data.predicted_exercise_id,
-            exerciseName: data.predicted_exercise_name,
-            confidence: data.prediction_confidence,
-            totalPredictions: data.total_predictions,
-            isFinal: data.is_prediction_final || false,
+        // 只在未暫停時更新統計數據
+        if (!isPausedRef.current) {
+          // Update prediction result (如果有預測資料)
+          if (data.predicted_exercise_id !== undefined) {
+            setPrediction({
+              exerciseId: data.predicted_exercise_id,
+              exerciseName: data.predicted_exercise_name,
+              confidence: data.prediction_confidence,
+              totalPredictions: data.total_predictions,
+              isFinal: data.is_prediction_final || false,
+            });
+          }
+
+          // Update stats (使用預測的運動名稱，如果有的話)
+          onStatsUpdate({
+            count: data.count,
+            stage: data.stage,
+            angle: data.angle,
+            exerciseName: data.predicted_exercise_name || data.exercise_name,
           });
         }
-
-        // Update stats (使用預測的運動名稱，如果有的話)
-        onStatsUpdate({
-          count: data.count,
-          stage: data.stage,
-          angle: data.angle,
-          exerciseName: data.predicted_exercise_name || data.exercise_name,
-        });
       } else {
         console.error('Frame processing error:', data.error);
         setError(data.error);
@@ -156,7 +160,7 @@ export default function VideoPlayer({
       }
 
       // 只有在沒有等待回應且未暫停時才發送新幀
-      if (!isWaitingForResponse.current && !isPaused) {
+      if (!isWaitingForResponse.current && !isPausedRef.current) {
         sendFrame();
       }
     }, frameInterval);
@@ -196,6 +200,7 @@ export default function VideoPlayer({
     if (videoRef.current) {
       videoRef.current.pause();
     }
+    isPausedRef.current = true;
     setIsPaused(true);
   };
 
@@ -204,6 +209,7 @@ export default function VideoPlayer({
     if (videoElement) {
       videoElement.play();
     }
+    isPausedRef.current = false;
     setIsPaused(false);
   };
 
@@ -222,6 +228,7 @@ export default function VideoPlayer({
       videoRef.current.pause();
     }
 
+    isPausedRef.current = false;
     setIsProcessing(false);
     setIsPaused(false);
   };
