@@ -231,6 +231,12 @@ async def websocket_process(websocket: WebSocket):
     predicted_exercise_id = None
     prediction_confidence = 0.0
 
+    # Smoothing filter for angle and other values
+    from collections import deque
+    angle_history = deque(maxlen=5)  # 保留最近5幀的角度
+    count_history = deque(maxlen=3)  # 保留最近3幀的計數
+    stage_history = deque(maxlen=3)  # 保留最近3幀的階段
+
     try:
         while True:
             # Receive data from frontend
@@ -313,9 +319,30 @@ async def websocket_process(websocket: WebSocket):
 
             # Update counter with exercise_id
             result = counter.update(landmarks, exercise_id)
-            count = result["count"]
-            stage = result["stage"]
-            angle = result["angle"]
+            raw_count = result["count"]
+            raw_stage = result["stage"]
+            raw_angle = result["angle"]
+
+            # Apply smoothing filter
+            count_history.append(raw_count)
+            stage_history.append(raw_stage)
+            if raw_angle is not None:
+                angle_history.append(raw_angle)
+
+            # 使用最常出現的值（眾數）來減少閃爍
+            from statistics import mode as stats_mode
+            try:
+                count = stats_mode(count_history) if len(count_history) > 0 else raw_count
+                stage = stats_mode(stage_history) if len(stage_history) > 0 else raw_stage
+            except:
+                count = raw_count
+                stage = raw_stage
+
+            # 角度使用平均值來平滑
+            if len(angle_history) > 0:
+                angle = sum(angle_history) / len(angle_history)
+            else:
+                angle = raw_angle
 
             # Draw visualization
             from visualization import PoseVisualizer
@@ -335,8 +362,9 @@ async def websocket_process(websocket: WebSocket):
                 _, point_b, _ = result["points"]
                 frame = visualizer.draw_angle(frame, angle, point_b)
 
-            # Encode frame back to base64
-            _, buffer = cv2.imencode('.jpg', frame)
+            # Encode frame back to base64 with higher quality to reduce artifacts
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
+            _, buffer = cv2.imencode('.jpg', frame, encode_param)
             frame_base64_out = base64.b64encode(buffer).decode('utf-8')
 
             # Send response

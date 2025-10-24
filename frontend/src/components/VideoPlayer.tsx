@@ -70,23 +70,27 @@ export default function VideoPlayer({
       if (data.success) {
         // Draw processed frame on canvas
         const canvas = canvasRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext('2d');
+        if (canvas && data.frame) {
+          const ctx = canvas.getContext('2d', { alpha: false });
           if (!ctx) return;
 
           const img = new Image();
           img.onload = () => {
-            if (!ctx) return;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            if (!canvas || !ctx) return;
 
-            // 如果有警告，在畫面上顯示
-            if (data.warning) {
-              ctx.fillStyle = 'rgba(255, 165, 0, 0.8)';
-              ctx.fillRect(10, 10, 300, 40);
-              ctx.fillStyle = 'white';
-              ctx.font = '16px Arial';
-              ctx.fillText(data.warning, 20, 35);
-            }
+            // 使用 requestAnimationFrame 來確保平滑繪製
+            requestAnimationFrame(() => {
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+              // 如果有警告，在畫面上顯示
+              if (data.warning) {
+                ctx.fillStyle = 'rgba(255, 165, 0, 0.8)';
+                ctx.fillRect(10, 10, 300, 40);
+                ctx.fillStyle = 'white';
+                ctx.font = '16px Arial';
+                ctx.fillText(data.warning, 20, 35);
+              }
+            });
           };
           img.src = data.frame;
         }
@@ -178,12 +182,19 @@ export default function VideoPlayer({
     // 標記正在等待回應
     isWaitingForResponse.current = true;
 
-    // Draw current video frame to canvas
-    const ctx = canvas.getContext('2d');
-    ctx?.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    // 創建臨時 canvas 來捕獲當前影片幀（不影響顯示的 canvas）
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
 
-    // Convert canvas to base64
-    const frameBase64 = canvas.toDataURL('image/jpeg', 0.8);
+    if (!tempCtx) return;
+
+    // 在臨時 canvas 上繪製當前影片幀
+    tempCtx.drawImage(videoElement, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    // Convert temp canvas to base64
+    const frameBase64 = tempCanvas.toDataURL('image/jpeg', 0.8);
 
     // Send to backend
     ws.send(
