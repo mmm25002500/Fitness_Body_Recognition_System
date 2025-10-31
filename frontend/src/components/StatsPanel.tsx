@@ -39,9 +39,9 @@ export default function StatsPanel({ count, stage, angle, exerciseName, mode }: 
       {/* Stage */}
       <div className="bg-slate-700/50 rounded-xl p-4">
         <div className="text-sm text-gray-400 mb-2">當前階段</div>
-        <div className={`text-2xl font-bold ${stage.toLowerCase() === 'up' ? 'text-green-400' : 'text-orange-400'
+        <div className={`text-2xl font-bold ${stage?.toLowerCase() === 'up' ? 'text-green-400' : 'text-orange-400'
           }`}>
-          {stage.toUpperCase() === 'UP' ? '上升' : '下降'}
+          {stage?.toUpperCase() === 'UP' ? '上升' : '下降'}
         </div>
       </div>
 

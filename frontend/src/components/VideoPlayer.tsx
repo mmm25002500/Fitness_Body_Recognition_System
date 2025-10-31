@@ -262,9 +262,8 @@ export default function VideoPlayer({
           className="hidden"
           muted
         >
-          {/* Provide a captions track to satisfy accessibility/lint rules.
-              If you have an actual VTT file, set src="/path/to/captions.vtt" and adjust srcLang/label accordingly. */}
-          <track kind="captions" src="" srcLang="en" label="English" default />
+          {/* Captions track removed to avoid empty src warning.
+              Add back with valid VTT file path if needed. */}
         </video>
         <canvas
           ref={canvasRef}
