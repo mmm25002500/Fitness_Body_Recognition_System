@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import SEO from "@/config/SEO.json";
+import Footer from "@/components/Footer/Footer";
+import Navbar from "@/components/Layout/Navbar";
 
 export const metadata: Metadata = {
   title: SEO.NotFound.title,
@@ -28,29 +30,23 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen dark:bg-neutral-900 flex items-center justify-center">
-      <div className="container mx-auto px-4 py-8">
+    <main className="min-h-screen bg-gray-950 flex flex-col">
+      <Navbar />
+      <div className="flex flex-col flex-1 items-center justify-center">
         <div className="text-center space-y-6">
-          <h1 className="text-9xl font-bold text-bityo">404</h1>
-          <h2 className="text-4xl font-bold text-white">找不到頁面</h2>
-          <p className="text-gray-400 text-lg max-w-md mx-auto">
-            抱歉，您訪問的頁面不存在或已被移除。
-          </p>
-
+          <h1 className="text-9xl font-bold text-func-error">404</h1>
+          <h2 className="text-4xl font-bold text-func-error">找不到頁面</h2>
           <div className="pt-8">
             <Link
               href="/"
-              className="inline-block px-8 py-4 bg-bityo hover:bg-bityo/80 text-white font-semibold rounded-lg transition-colors"
+              className="inline-block px-8 py-3 bg-neutral-black hover:bg-neutral-800 text-neutral-white rounded-lg transition-colors"
             >
               返回首頁
             </Link>
           </div>
-
-          <div className="pt-12 text-gray-500 text-sm">
-            <p>如果您認為這是一個錯誤，請聯繫我們。</p>
-          </div>
         </div>
       </div>
+      <Footer />
     </main>
   );
 }
