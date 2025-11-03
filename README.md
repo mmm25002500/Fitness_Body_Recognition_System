@@ -1,27 +1,36 @@
 # 健身肢體辨識系統 文檔 - Docs of Fitness Body Recognition System
-一個基於 BiLSTM 和 MediaPipe 的健身肢體辨識系統，可支援全自動或全手動識別五種不同的運動模式。
+一個基於 BiLSTM 和 MediaPipe 的健身肢體辨識系統，自動識別五種不同的運動模式並提供即時角度監測與警示。
 
 ## 介紹
 
 ### Skill Stack
-* Frontend: Next.js 15, React, TypeScript, Tailwind
-* Backend(API): Python FastAPI
+* Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS
+* Backend(API): Python FastAPI, WebSocket
 * ML: PyTorch BiLSTM with Attention
-* Pose Estimation: MediaPipe Pose(33 points)
+* Pose Estimation: MediaPipe Pose (33 landmarks)
 * API: WebSocket + REST API
 
 ### 支援運動
-1. 槓鈴二頭彎舉
-2. 錘式彎舉
-3. 伏地挺身
-4. 肩上推舉
-5. 深蹲
+1. 槓鈴二頭彎舉 (Barbell Bicep Curl)
+2. 錘式彎舉 (Hammer Curl)
+3. 伏地挺身 (Push-up)
+4. 肩上推舉 (Shoulder Press)
+5. 深蹲 (Squat)
+
+### 功能特色
+- **自動運動識別**：使用 BiLSTM 模型自動判斷運動類型
+- **即時計數追蹤**：自動計算運動次數與階段（上升/下降）
+- **角度監測與警示**：
+  - 深蹲：角度 <90° 注意、<50° 報警
+  - 肩上推舉：角度 <90° 注意、<75° 報警
+  - 槓鈴二頭彎舉：角度 <140° 注意
+- **即時視覺化**：在影片上標示骨架關節點與角度資訊
 
 ## 如何安裝
 ### System Requirements
 - Python 3.11+
-- Node.js 18+
-- pnpm or npm
+- Node.js 20+
+- pnpm (推薦) or npm
 
 ### Installation
 1. 後端必要檔案：`python3.11 -m pip install -r requirements.txt`
@@ -64,14 +73,24 @@ ${Project_Folder}/
 │   ├── requirements.txt           # Python 依賴套件
 │   └── run_backend.sh            # 後端啟動腳本
 ├── frontend/                       # 前端核心程式
-│   ├── app/
-│   │   └── page.tsx              # 主頁面
-│   ├── components/               # React 組件
-│   │   ├── VideoUploader.tsx
-│   │   ├── VideoPlayer.tsx
-│   │   ├── ExerciseSelector.tsx
-│   │   └── StatsPanel.tsx
-│   └── package.json
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.tsx          # 主頁面
+│   │   │   ├── layout.tsx        # 全域佈局
+│   │   │   └── not-found.tsx     # 404 頁面
+│   │   ├── components/           # React 組件
+│   │   │   ├── HomeClient.tsx    # 主頁客戶端組件
+│   │   │   ├── VideoUploader.tsx # 影片上傳器
+│   │   │   ├── VideoPlayer.tsx   # 影片播放器與處理
+│   │   │   ├── StatsPanel.tsx    # 統計面板（含角度警示）
+│   │   │   ├── Layout/
+│   │   │   │   └── Navbar.tsx    # 導航列
+│   │   │   └── Footer/
+│   │   │       └── Footer.tsx    # 頁尾
+│   │   ├── types/                # TypeScript 類型定義
+│   │   └── config/               # 配置檔案
+│   ├── package.json
+│   └── tailwind.config.ts
 ├── tools/                          # 輔助工具
 │   ├── app.py                    # Streamlit 版本（舊版）
 │   ├── inference_v2.py           # 命令列推論工具
@@ -82,17 +101,77 @@ ${Project_Folder}/
 ```
 
 ## API
+
+### REST API
 - `GET /` - 健康檢查
 - `GET /api/exercises` - 取得支援的運動列表
-- `POST /api/upload` - 上傳影片檔案
-- `POST /api/predict` - 預測運動類型
-- `WS /ws/process` - WebSocket 即時影片處理
+
+### WebSocket API
+- `WS /ws/process` - 即時影片處理
+
+#### WebSocket 訊息格式
+**發送（Client → Server）：**
+```json
+{
+  "mode": "automatic",
+  "exercise_id": 3,
+  "frame": "data:image/jpeg;base64,...",
+  "debug": false
+}
+```
+
+**接收（Server → Client）：**
+```json
+{
+  "success": true,
+  "frame": "data:image/jpeg;base64,...",
+  "count": 5,
+  "stage": "up",
+  "angle": 85.5,
+  "exercise_name": "Squat",
+  "predicted_exercise_id": 4,
+  "predicted_exercise_name": "Squat",
+  "prediction_confidence": 0.92,
+  "total_predictions": 15,
+  "is_prediction_final": true,
+  "warning": "注意角度"
+}
+```
 
 ## Model Details
+
+### BiLSTM 模型
 - **架構**：雙向 LSTM 搭配注意力機制
 - **輸入**：102 維特徵向量（45 幀，步長 3）
-- **特徵**：8 個關節角度 + 51 個 3D 座標 + 43 個幾何特徵
+- **特徵**：
+  - 8 個關節角度
+  - 51 個 3D 座標（17 個關節點 × 3）
+  - 43 個幾何特徵
 - **準確率**：測試集上達 85-90%
+
+### 姿態估計
+- **工具**：MediaPipe Pose
+- **關節點**：33 個 landmarks
+- **追蹤**：即時骨架偵測與角度計算
+
+### 運動計數邏輯
+- 基於關節角度的狀態機
+- 檢測動作的「上升」和「下降」階段
+- 完成一個完整循環時計數 +1
+
+## 部署
+
+### Cloudflare Pages
+前端已部署至 Cloudflare Pages，使用 pnpm 作為套件管理工具。
+
+**部署設定：**
+- Build command: `pnpm run build`
+- Build output directory: `frontend/.next`
+- Root directory: `frontend`
+- Node.js version: 20
+
+### 本地開發
+後端需在本地執行（WebSocket 連接 localhost:8000）
 
 ## 授權
 MIT License
