@@ -286,7 +286,7 @@ export default function VideoPlayer({
             onClick={startProcessing}
             className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
           >
-            ▶️ Start Processing
+            開始處理
           </button>
         ) : isPaused ? (
           <button
@@ -294,7 +294,7 @@ export default function VideoPlayer({
             onClick={resumeProcessing}
             className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
           >
-            ▶️ Resume
+            繼續
           </button>
         ) : (
           <button
@@ -302,7 +302,7 @@ export default function VideoPlayer({
             onClick={pauseProcessing}
             className="flex-1 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition-colors"
           >
-            ⏸️ Pause
+            暫停
           </button>
         )}
 
@@ -311,7 +311,7 @@ export default function VideoPlayer({
           onClick={onReset}
           className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
         >
-          🔄 Reset
+          重設
         </button>
       </div>
 
@@ -320,10 +320,10 @@ export default function VideoPlayer({
         <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/50 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-blue-200">
-              {prediction.isFinal ? '🎯 Final Prediction' : '🔄 Real-time Prediction'}
+              {prediction.isFinal ? '最終預測' : '即時預測'}
             </h3>
             <span className="text-xs text-gray-400">
-              {prediction.totalPredictions} predictions
+              {prediction.totalPredictions} 次預測
             </span>
           </div>
 
@@ -348,22 +348,11 @@ export default function VideoPlayer({
 
           {prediction.isFinal && (
             <div className="text-sm text-green-300 text-center pt-2 border-t border-blue-500/30">
-              ✓ Analysis Complete
+              分析完成
             </div>
           )}
         </div>
       )}
-
-      {/* Info */}
-      <div className="text-sm text-gray-400 text-center">
-        {!isProcessing ? (
-          <span>Click Start Processing to begin analysis</span>
-        ) : isPaused ? (
-          <span className="text-yellow-400">⏸️ Paused - Click Resume to continue</span>
-        ) : (
-          <span className="text-green-400">● Processing video in real-time...</span>
-        )}
-      </div>
     </div>
   );
 }

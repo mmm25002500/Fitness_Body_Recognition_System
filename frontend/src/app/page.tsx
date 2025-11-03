@@ -1,7 +1,7 @@
-
 import type { Metadata } from "next";
 import SEO from "@/config/SEO.json";
 import HomeClient from '@/components/HomeClient';
+import Navbar from "@/components/Layout/Navbar";
 
 export const metadata: Metadata = {
   title: SEO.Index.title,
@@ -31,8 +31,11 @@ export const metadata: Metadata = {
 const Home = () => {
   return (
     <main className="min-h-screen dark:bg-neutral-900">
-      <div className="container mx-auto px-4 py-8">
-        <HomeClient />
+      <div className="flex flex-col gap-5">
+        <Navbar />
+        <div className="px-6">
+          <HomeClient />
+        </div>
       </div>
     </main>
   );
