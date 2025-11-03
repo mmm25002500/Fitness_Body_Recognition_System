@@ -5,7 +5,6 @@ import VideoUploader from '@/components/VideoUploader';
 import VideoPlayer from '@/components/VideoPlayer';
 // import ExerciseSelector from '@/components/ExerciseSelector';
 import StatsPanel from '@/components/StatsPanel';
-import Footer from '@/components/Footer/Footer';
 
 export default function HomeClient() {
   const mode = 'automatic';
@@ -51,6 +50,11 @@ export default function HomeClient() {
           />
         </div>
       )} */}
+      <div className='my-1'>
+        <p className="text-neutral-400">
+          一個基於 BiLSTM 和 MediaPipe 的健身肢體辨識系統，自動識別五種不同的運動模式。
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
@@ -80,8 +84,6 @@ export default function HomeClient() {
           />
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }
