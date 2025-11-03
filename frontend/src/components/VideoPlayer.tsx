@@ -317,30 +317,29 @@ export default function VideoPlayer({
 
       {/* Prediction Result Display */}
       {prediction && (
-        <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/50 rounded-xl p-5 space-y-3">
+        <div className="bg-gradient-to-r bg-gray-800 border border-bityo/50 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-blue-200">
               {prediction.isFinal ? '最終預測' : '即時預測'}
             </h3>
             <span className="text-xs text-gray-400">
-              {prediction.totalPredictions} 次預測
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-bold text-white">
-                {prediction.exerciseName}
+                運動名稱：{prediction.exerciseName}
               </span>
-              <span className="text-xl font-semibold text-green-400">
-                {(prediction.confidence * 100).toFixed(1)}%
+              <span className={`text-xl font-semibold ${prediction.confidence > 0.8 ? 'text-bityo' : prediction.confidence > 0.5 ? 'text-yellow-500' : 'text-red-500'}`}>
+                準確度：{(prediction.confidence * 100).toFixed(1)}%
               </span>
             </div>
 
             {/* Confidence Bar */}
             <div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-green-500 to-blue-500 h-2.5 rounded-full transition-all duration-300"
+                className={`bg-gradient-to-r h-2.5 rounded-full transition-all duration-300 ${prediction.confidence > 0.8 ? 'bg-bityo' : prediction.confidence > 0.5 ? 'bg-yellow-400' : 'bg-red-500'}`}
                 style={{ width: `${prediction.confidence * 100}%` }}
               />
             </div>
