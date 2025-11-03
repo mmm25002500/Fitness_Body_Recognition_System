@@ -255,7 +255,7 @@ export default function VideoPlayer({
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 space-y-4">
       {/* Video Display */}
-      <div className="relative aspect-video bg-black rounded-xl overflow-hidden">
+      <div className="relative aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center">
         <video
           ref={videoRef}
           onLoadedMetadata={handleVideoLoaded}
@@ -267,7 +267,7 @@ export default function VideoPlayer({
         </video>
         <canvas
           ref={canvasRef}
-          className="w-full h-full"
+          className="max-w-full max-h-full object-contain"
         />
       </div>
 
