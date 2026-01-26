@@ -1,6 +1,6 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
-python-multipart==0.0.20
+python-multipart==0.0.22
 websockets==14.1
 torch==2.9.0
 numpy==1.26.4
